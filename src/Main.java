@@ -1,8 +1,15 @@
+import java.util.*;
 int[] referenceString = {7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2};
 int frameCount = 3;
 
 
 void main() {
+    // LRU testing
+    System.out.println("=== LRU ===");
+    algorithmResult r = lru();
+    System.out.println("Hits: " + r.hits);
+    System.out.println("Faults: " + r.faults);
+    System.out.printf("Fault ratio: %.2f%n", (double) r.faults / referenceString.length);
     // TODO: run the algorithms and report their results.
 }
 
@@ -16,8 +23,34 @@ algorithmResult fifo(){
 
 
 algorithmResult lru(){
-    int hits = 0;
-    int faults = 0;
+    // Validation
+    if (referenceString == null || referenceString.length == 0) {
+        throw new IllegalArgumentException("Reference string must not be empty.");
+    }
+    if (frameCount <= 0) {
+        throw new IllegalArgumentException("Frame count must be greater than 0.");
+    }
+
+    // frames.get(0) = least recently used, last element = most recently used
+    List<Integer> frames = new ArrayList<>();
+    int hits = 0, faults = 0;
+
+    for (int page : referenceString) {
+        int idx = frames.indexOf(page);
+
+        if (idx != -1) {                     // HIT
+            hits++;
+            frames.remove(idx);              // move page to the "most recent" end
+            frames.add(page);
+        } else {                             // FAULT
+            faults++;
+            if (frames.size() == frameCount) {
+                frames.remove(0);            // evict the least recently used page
+            }
+            frames.add(page);
+        }
+        System.out.println("Page " + page + (idx != -1 ? " HIT   " : " FAULT ") + frames);
+    }
     return new algorithmResult(hits, faults);
 }
 

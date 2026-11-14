@@ -1,15 +1,26 @@
 # Page Replacement Algorithms
 
-A small Java simulator for CPIT260 Topic 7. It compares FIFO, LRU, and Optimal page replacement using the same page reference string and configurable frame count.
+A small Java 25 project for CPIT260 Topic 7. The project compares FIFO, LRU, and Optimal page replacement for the same page reference string and frame count.
 
-## Planned results
+## Shared inputs
 
-For each algorithm, the program will show the page hits, page faults, and fault ratio. The fault ratio is the number of page faults divided by the number of page references.
+The current example in `src/Main.java` uses the reference string `7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2` and 3 frames. These values can be changed when testing.
 
-## Input handling
+## Team implementation
 
-The program should validate the reference string and require a positive frame count. Invalid input should produce a clear error instead of incorrect results or a crash.
+Each algorithm has a method with the same return type: `algorithmResult`. Implement the replacement logic in `fifo()`, `lru()`, or `optimalReplacement()` while keeping that method’s frame state and hit/fault counters local to its run. Return the counts in a new `algorithmResult` object.
+
+`algorithmResult` stores the hit and fault counts. The fault ratio is the number of faults divided by the number of references.
 
 ## Status
 
-The repository is currently a starter scaffold. `src/Main.java` contains TODOs; the algorithms, input handling, and output are not implemented yet. Compile and run instructions will be added once the code and required Java version are finalized.
+The repository contains the method and result structure, but the replacement logic, input validation, and final reporting are still to be implemented. The current methods return zero counts as placeholders.
+
+## Compile and run
+
+From the project root with JDK 25:
+
+```text
+javac src/Main.java
+java -cp src Main
+```

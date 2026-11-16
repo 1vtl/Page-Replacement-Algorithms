@@ -15,9 +15,37 @@ void main() {
 
 
 
-algorithmResult fifo(){
+algorithmResult fifo() {
+    // Validation
+    if (referenceString == null || referenceString.length == 0) {
+        throw new IllegalArgumentException("Reference string must not be empty.");
+    }
+    if (frameCount <= 0) {
+        throw new IllegalArgumentException("Frame count must be greater than 0.");
+    }
+
+    Queue<Integer> queue = new LinkedList<>();
     int hits = 0;
     int faults = 0;
+
+    for (int page : referenceString) {
+        if (page < 0) {
+            throw new IllegalArgumentException("Page numbers cannot be negative: " + page);
+        }
+
+        boolean hit = queue.contains(page);
+        if (hit) {
+            hits++;
+        } else {
+            faults++;
+            if (queue.size() == frameCount) {
+                queue.poll();
+            }
+            queue.add(page);
+        }
+        System.out.println("Page " + page + (hit ? " HIT   " : " FAULT ") + queue);
+    }
+
     return new algorithmResult(hits, faults);
 }
 

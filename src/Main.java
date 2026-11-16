@@ -55,11 +55,53 @@ algorithmResult lru(){
 }
 
 
-algorithmResult optimalReplacement(){
+algorithmResult optimalReplacement() {
     int hits = 0;
     int faults = 0;
+
+    java.util.List<Integer> frames = new java.util.ArrayList<>();
+
+    for (int i = 0; i < referenceString.length; i++) {
+        int page = referenceString[i];
+
+        if (frames.contains(page)) {
+            hits++;
+        }
+        else {
+            faults++;
+
+            if (frames.size() < frameCount) {
+                frames.add(page);
+            }
+            else {
+                int farthestIndex = -1;
+                int pageToReplace = -1;
+
+                for (int framePage : frames) {
+                    int nextUse = Integer.MAX_VALUE;
+
+                    for (int j = i + 1; j < referenceString.length; j++) {
+                        if (referenceString[j] == framePage) {
+                            nextUse = j;
+                            break;
+                        }
+                    }
+
+                    if (nextUse > farthestIndex) {
+                        farthestIndex = nextUse;
+                        pageToReplace = framePage;
+                    }
+                }
+
+                int indexToReplace = frames.indexOf(pageToReplace);
+                frames.set(indexToReplace, page);
+            }
+        }
+    }
+
     return new algorithmResult(hits, faults);
 }
+
 static class algorithmResult {
     int hits;
     int faults;

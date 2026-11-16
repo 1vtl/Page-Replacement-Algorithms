@@ -4,23 +4,20 @@ int frameCount = 3;
 
 
 void main() {
-    // LRU testing
-    algorithmResult r = lru();
-    algorithmResult q = fifo();
-    algorithmResult o = optimalReplacement();
-    System.out.println("LRU \n");
-    System.out.println("Hits: " + r.hits);
-    System.out.println("Faults: " + r.faults);
-    System.out.printf("Fault ratio: %.2f%n", (double) r.faults / referenceString.length);
-    // TODO: run the algorithms and report their results.
-    System.out.println("FIFO \n");
-    System.out.println("Hits: " + q.hits);
-    System.out.println("Faults: " + q.faults);
-    System.out.printf("Fault ratio: %.2f%n", (double) q.faults / referenceString.length);
-    System.out.println("Optimal \n");
-    System.out.println("Hits: " + o.hits);
-    System.out.println("Faults: " + o.faults);
-    System.out.printf("Fault ratio: %.2f%n", (double) o.faults / referenceString.length);
+    System.out.println("Page Replacement Simulation");
+    System.out.println("Reference string: " + Arrays.toString(referenceString));
+    System.out.println("Frame count: " + frameCount);
+
+    printResult("FIFO", fifo());
+    printResult("LRU", lru());
+    printResult("Optimal", optimalReplacement());
+}
+
+void printResult(String algorithmName, algorithmResult result) {
+    System.out.println("\n=== " + algorithmName + " ===");
+    System.out.println("Hits: " + result.hits);
+    System.out.println("Page faults: " + result.faults);
+    System.out.printf("Fault ratio: %.2f%n", (double) result.faults / referenceString.length);
 }
 
 
@@ -34,6 +31,7 @@ algorithmResult fifo() {
         throw new IllegalArgumentException("Frame count must be greater than 0.");
     }
 
+    System.out.println("\nFIFO page-by-page:");
     Queue<Integer> queue = new LinkedList<>();
     int hits = 0;
     int faults = 0;
@@ -53,7 +51,7 @@ algorithmResult fifo() {
             }
             queue.add(page);
         }
-        System.out.println("Page " + page + (hit ? " HIT   " : " FAULT ") + queue);
+        System.out.printf("  Page %-3d | %-5s | Frames: %s%n", page, hit ? "HIT" : "FAULT", queue);
     }
 
     return new algorithmResult(hits, faults);
@@ -69,6 +67,7 @@ algorithmResult lru(){
         throw new IllegalArgumentException("Frame count must be greater than 0.");
     }
 
+    System.out.println("\nLRU page-by-page:");
     // frames.get(0) = least recently used, last element = most recently used
     List<Integer> frames = new ArrayList<>();
     int hits = 0, faults = 0;
@@ -87,13 +86,21 @@ algorithmResult lru(){
             }
             frames.add(page);
         }
-        System.out.println("Page " + page + (idx != -1 ? " HIT   " : " FAULT ") + frames);
+        System.out.printf("  Page %-3d | %-5s | Frames (LRU → MRU): %s%n", page, idx != -1 ? "HIT" : "FAULT", frames);
     }
     return new algorithmResult(hits, faults);
 }
 
 
 algorithmResult optimalReplacement() {
+    if (referenceString == null || referenceString.length == 0) {
+        throw new IllegalArgumentException("Reference string must not be empty.");
+    }
+    if (frameCount <= 0) {
+        throw new IllegalArgumentException("Frame count must be greater than 0.");
+    }
+
+    System.out.println("\nOptimal page-by-page:");
     int hits = 0;
     int faults = 0;
 
@@ -101,8 +108,12 @@ algorithmResult optimalReplacement() {
 
     for (int i = 0; i < referenceString.length; i++) {
         int page = referenceString[i];
+        if (page < 0) {
+            throw new IllegalArgumentException("Page numbers cannot be negative: " + page);
+        }
 
-        if (frames.contains(page)) {
+        boolean hit = frames.contains(page);
+        if (hit) {
             hits++;
         }
         else {
@@ -135,6 +146,7 @@ algorithmResult optimalReplacement() {
                 frames.set(indexToReplace, page);
             }
         }
+        System.out.printf("  Page %-3d | %-5s | Frames: %s%n", page, hit ? "HIT" : "FAULT", frames);
     }
 
     return new algorithmResult(hits, faults);

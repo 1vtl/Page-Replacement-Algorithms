@@ -1,24 +1,27 @@
 # Page Replacement Algorithms
 
-A small Java 25 project for CPIT260 Topic 7. The project compares FIFO, LRU, and Optimal page replacement for the same page reference string and frame count.
+A small Java project for simulating three operating-system page replacement algorithms: FIFO, LRU, and Optimal. Each algorithm runs against the same reference string and frame count, prints the frame contents after every page reference, and reports its total hits, page faults, and fault ratio.
 
-## Shared inputs
+## Current example
 
-The current example in `src/Main.java` uses the reference string `7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2` and 3 frames. These values can be changed when testing.
+The values in `src/Main.java` are:
 
-## Team implementation
+- Reference string: `7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2`
+- Frame count: `3`
 
-Each algorithm has a method with the same return type: `algorithmResult`. Implement the replacement logic in `fifo()`, `lru()`, or `optimalReplacement()` while keeping that method’s frame state and hit/fault counters local to its run. Return the counts in a new `algorithmResult` object.
+Change these values in `Main.java` to run another simulation.
 
-`algorithmResult` stores the hit and fault counts. The fault ratio is the number of faults divided by the number of references.
+## Algorithms
 
-## Status
+- **FIFO** replaces the page that has been in memory the longest.
+- **LRU** replaces the page that has not been used for the longest time. Its displayed frame list is ordered from least recently used to most recently used.
+- **Optimal** replaces the page whose next use is farthest in the future, or that is never used again.
 
-The repository contains the method and result structure, but the replacement logic, input validation, and final reporting are still to be implemented. The current methods return zero counts as placeholders.
+The program validates that the reference string is not empty, the frame count is greater than zero, and page numbers are nonnegative. Results are returned in an `algorithmResult` object containing hit and fault counts. The fault ratio is `page faults / number of references`.
 
 ## Compile and run
 
-From the project root with JDK 25:
+Requires JDK 25, which supports the compact source-file `void main()` used by this project. From the project root:
 
 ```text
 javac src/Main.java

@@ -5,12 +5,22 @@ int frameCount = 3;
 
 void main() {
     // LRU testing
-    System.out.println("=== LRU ===");
     algorithmResult r = lru();
+    algorithmResult q = fifo();
+    algorithmResult o = optimalReplacement();
+    System.out.println("LRU \n");
     System.out.println("Hits: " + r.hits);
     System.out.println("Faults: " + r.faults);
     System.out.printf("Fault ratio: %.2f%n", (double) r.faults / referenceString.length);
     // TODO: run the algorithms and report their results.
+    System.out.println("FIFO \n");
+    System.out.println("Hits: " + q.hits);
+    System.out.println("Faults: " + q.faults);
+    System.out.printf("Fault ratio: %.2f%n", (double) q.faults / referenceString.length);
+    System.out.println("Optimal \n");
+    System.out.println("Hits: " + o.hits);
+    System.out.println("Faults: " + o.faults);
+    System.out.printf("Fault ratio: %.2f%n", (double) o.faults / referenceString.length);
 }
 
 
@@ -73,7 +83,7 @@ algorithmResult lru(){
         } else {                             // FAULT
             faults++;
             if (frames.size() == frameCount) {
-                frames.remove(0);            // evict the least recently used page
+                frames.removeFirst();            // evict the least recently used page
             }
             frames.add(page);
         }

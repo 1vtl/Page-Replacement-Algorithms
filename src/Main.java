@@ -1,9 +1,16 @@
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import java.awt.*;
 import java.util.*;
-int[] referenceString = {7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2};
-int frameCount = 3;
+import java.util.List;
+
+static int[] referenceString = {7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2};
+static int frameCount = 3;
 
 
-void main() {
+void main(String[] args) {
     System.out.println("Page Replacement Simulation");
     System.out.println("Reference string: " + Arrays.toString(referenceString));
     System.out.println("Frame count: " + frameCount);
@@ -11,18 +18,146 @@ void main() {
     printResult("FIFO", fifo());
     printResult("LRU", lru());
     printResult("Optimal", optimalReplacement());
+
+    startGUI();
 }
 
-void printResult(String algorithmName, algorithmResult result) {
+static void startGUI() {
+    JFrame frame = new JFrame("Page Replacement Simulator");
+    frame.setSize(800, 600);
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    frame.setLayout(new BorderLayout(10, 10));
+
+
+    JPanel topPanel = new JPanel();
+    JLabel infoLabel = new JLabel("Frames: " + frameCount + " | Ref String: " + Arrays.toString(referenceString) + "   ");
+
+
+    String[] algorithms = {"FIFO", "LRU", "Optimal"};
+    JComboBox<String> algoSelector = new JComboBox<>(algorithms);
+    JButton runButton = new JButton("Run Algorithm");
+
+    topPanel.add(infoLabel);
+    topPanel.add(algoSelector);
+    topPanel.add(runButton);
+
+
+    DefaultTableModel tableModel = new DefaultTableModel(new String[]{"Page", "Status", "Frames"}, 0);
+    JTable table = new JTable(tableModel);
+    table.setRowHeight(30);
+    table.setEnabled(false);
+
+    DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+    centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+    for (int i = 0; i < table.getColumnCount(); i++) {
+        table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+    }
+
+    JTableHeader header = table.getTableHeader();
+    header.setBackground(new Color(51, 122, 183));
+    header.setForeground(Color.WHITE);
+    header.setFont(new Font("SansSerif", Font.BOLD, 14));
+    ((DefaultTableCellRenderer)header.getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
+
+    JScrollPane tableScroll = new JScrollPane(table);
+
+
+    JTextArea summaryArea = new JTextArea(5, 20);
+    summaryArea.setEditable(false);
+    summaryArea.setFont(new Font("Monospaced", Font.BOLD, 14));
+    summaryArea.setBorder(BorderFactory.createTitledBorder("Summary"));
+    JScrollPane summaryScroll = new JScrollPane(summaryArea);
+
+    frame.add(topPanel, BorderLayout.NORTH);
+    frame.add(tableScroll, BorderLayout.CENTER);
+    frame.add(summaryScroll, BorderLayout.SOUTH);
+
+
+    PrintStream printStream = new PrintStream(new OutputStream() {
+        StringBuilder buffer = new StringBuilder();
+
+
+        @Override
+        public void write(byte[] b, int off, int len) {
+            String text = new String(b, off, len);
+            for (char c : text.toCharArray()) {
+                if (c == '\n') {
+                    processLine(buffer.toString().trim());
+                    buffer.setLength(0);
+                } else if (c != '\r') {
+                    buffer.append(c);
+                }
+            }
+        }
+
+        @Override
+        public void write(int b) {
+            char c = (char) b;
+            if (c == '\n') {
+                processLine(buffer.toString().trim());
+                buffer.setLength(0);
+            } else if (c != '\r') {
+                buffer.append(c);
+            }
+        }
+
+        void processLine(String line) {
+            if (line.contains("|")) {
+                String[] parts = line.split("\\|");
+                if (parts.length >= 3) {
+
+                    String page = parts[0].replace("Page", "").trim();
+                    String status = parts[1].trim();
+
+                    String framesStr = parts[2];
+                    int start = framesStr.indexOf('[');
+                    int end = framesStr.indexOf(']');
+                    String frames = (start != -1 && end != -1) ? framesStr.substring(start + 1, end) : framesStr;
+
+                    tableModel.addRow(new Object[]{page, status, frames});
+                }
+            } else if (line.contains("===") || line.contains("Hits:") || line.contains("faults:") || line.contains("ratio:")) {
+                summaryArea.append(line + "\n");
+            }
+        }
+    });
+    System.setOut(printStream);
+    System.setErr(printStream);
+
+
+    runButton.addActionListener(e -> {
+        tableModel.setRowCount(0);
+        summaryArea.setText("");
+
+        String selected = (String) algoSelector.getSelectedItem();
+
+        try {
+            if (selected.equals("FIFO")) {
+                printResult("FIFO", fifo());
+            } else if (selected.equals("LRU")) {
+                printResult("LRU", lru());
+            } else if (selected.equals("Optimal")) {
+                printResult("Optimal", optimalReplacement());
+            }
+        } catch (Exception ex) {
+            summaryArea.append("Error: " + ex.getMessage() + "\n");
+        }
+    });
+
+    frame.setLocationRelativeTo(null);
+    frame.setVisible(true);
+}
+
+static void printResult(String algorithmName, algorithmResult result) {
     System.out.println("\n=== " + algorithmName + " ===");
     System.out.println("Hits: " + result.hits);
     System.out.println("Page faults: " + result.faults);
-    System.out.printf("Fault ratio: %.2f%n", (double) result.faults / referenceString.length);
+    System.out.printf("Fault ratio: %.2f%%%n", ((double) result.faults / referenceString.length) * 100);
 }
 
 
 
-algorithmResult fifo() {
+static algorithmResult fifo() {
     // Validation
     if (referenceString == null || referenceString.length == 0) {
         throw new IllegalArgumentException("Reference string must not be empty.");
@@ -58,7 +193,7 @@ algorithmResult fifo() {
 }
 
 
-algorithmResult lru(){
+static algorithmResult lru(){
     // Validation
     if (referenceString == null || referenceString.length == 0) {
         throw new IllegalArgumentException("Reference string must not be empty.");
@@ -92,7 +227,7 @@ algorithmResult lru(){
 }
 
 
-algorithmResult optimalReplacement() {
+static algorithmResult optimalReplacement() {
     if (referenceString == null || referenceString.length == 0) {
         throw new IllegalArgumentException("Reference string must not be empty.");
     }

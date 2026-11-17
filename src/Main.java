@@ -11,13 +11,14 @@ static int frameCount = 3;
 
 
 void main(String[] args) {
-    System.out.println("Page Replacement Simulation");
+    // used for debugging.
+    /*System.out.println("Page Replacement Simulation");
     System.out.println("Reference string: " + Arrays.toString(referenceString));
     System.out.println("Frame count: " + frameCount);
 
     printResult("FIFO", fifo());
     printResult("LRU", lru());
-    printResult("Optimal", optimalReplacement());
+    printResult("Optimal", optimalReplacement());*/
 
     startGUI();
 }
